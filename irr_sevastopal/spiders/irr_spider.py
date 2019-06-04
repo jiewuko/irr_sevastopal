@@ -1,7 +1,7 @@
 import base64
 
 import scrapy
-from items import IrrSevastopalItem
+from ..items import IrrSevastopalItem
 
 
 class IrrSpider(scrapy.Spider):
