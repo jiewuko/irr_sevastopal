@@ -96,7 +96,8 @@ FEED_EXPORTERS = {
 }
 
 FIELDS_TO_EXPORT = [
-    'url', 'name', 'description', 'subcategory', 'address', 'published_date', 'price', 'telephone', 'agency',
+    'url', 'title', 'description', 'category', 'subcategory', 'type_', 'owner_name', 'address',
+    'published_date', 'price', 'telephone', 'agency',
 ]
 
 # LOG_LEVEL = 'INFO'
@@ -108,7 +109,7 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.retry.RetryMiddleware': 90,
 }
 
-data = {
+DATA = {
     'Категория':
     {
         'Жилая недвижимость': {
@@ -178,6 +179,3 @@ data = {
 CATEGORY = 'Коммерческая недвижимость'
 TYPE_ = 'Продажа'
 SUB_CATEGORY = 'Офисы'
-
-URL = data.get('Категория').get(CATEGORY).get('Тип').get(TYPE_).get(SUB_CATEGORY)
-

@@ -39,9 +39,10 @@ class SQLiteStorePipeline(object):
             print('Это объявление уже есть в базе {}'.format(item['url']))
             return
         try:
-            self.conn.execute('insert into irr_data(url,name,description,subcategory,'
-                              'address,published_date,price,telephone,agency) VALUES(?,?,?,?,?,?,?,?,?)',
-                              (item['url'], item['name'], item['description'], item['subcategory'],
+            self.conn.execute('insert into irr_data(url,title,description,category,subcategory,type_,owner_name,'
+                              'address,published_date,price,telephone,agency) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+                              (item['url'], item['title'], item['description'], item['category'],
+                               item['subcategory'], item['type_'], item['owner_name'],
                                item['address'], item['published_date'], item['price'],
                                item['telephone'], item['agency'],
                                ))
@@ -66,7 +67,8 @@ class SQLiteStorePipeline(object):
     def create_table(self, filename):
         conn = sqlite3.connect(filename)
         conn.execute("""CREATE TABLE irr_data
-                     (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT, name TEXT, description TEXT, subcategory TEXT,
+                     (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT, title TEXT, description TEXT,
+                      category TEXT, subcategory TEXT, type_ TEXT, owner_name TEXT,
                       address TEXT, published_date NUMERIC, price TEXT, telephone TEXT, agency TEXT)""")
         conn.commit()
         return conn

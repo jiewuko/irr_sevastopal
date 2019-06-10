@@ -10,11 +10,15 @@ import scrapy
 
 class IrrSevastopalItem(scrapy.Item):
     url = scrapy.Field()
-    name = scrapy.Field()
+    title = scrapy.Field()
     description = scrapy.Field()
+    category = scrapy.Field()
     subcategory = scrapy.Field()
+    type_ = scrapy.Field()
+    owner_name = scrapy.Field()
     address = scrapy.Field()
     published_date = scrapy.Field()
     price = scrapy.Field()
     telephone = scrapy.Field()
     agency = scrapy.Field()
+
