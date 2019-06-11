@@ -20,12 +20,20 @@ class IrrSpider(scrapy.Spider):
         with open(os.getcwd() + '/config.csv') as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             for i in (list(csv_reader)[1:]):
-                country = i[0] + '.' if i[0] else ''
-                category = i[1]
-                sub_category = i[2]
-                type_ = i[3]
-                hours = i[4]
-                url = data.get('Категория').get(category).get('Тип').get(type_).get(sub_category)
+                try:
+                    country = i[0].encode('cp1251').decode("utf-8") + '.' if i[0] else ''
+                    category = i[1].encode('cp1251').decode("utf-8")
+                    sub_category = i[2].encode('cp1251').decode("utf-8")
+                    type_ = i[3].encode('cp1251').decode("utf-8")
+                    hours = i[4].encode('cp1251').decode("utf-8")
+                    url = data.get('Категория').get(category).get('Тип').get(type_).get(sub_category)
+                except UnicodeDecodeError:
+                    country = i[0] + '.' if i[0] else ''
+                    category = i[1]
+                    sub_category = i[2]
+                    type_ = i[3]
+                    hours = i[4]
+                    url = data.get('Категория').get(category).get('Тип').get(type_).get(sub_category)
                 yield scrapy.Request(
                     url='https://{}irr.ru/real-estate/{}'.format(country, url),
                     callback=self.parse,
