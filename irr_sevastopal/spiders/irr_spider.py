@@ -79,9 +79,9 @@ class IrrSpider(scrapy.Spider):
         sub_category = response.meta.get('sub_category')
         type_ = response.meta.get('type_')
         hours = int(response.meta.get('hours'))
-        owner_name = response.xpath(
-            "//div[contains(@class, 'productPage__infoTextBold productPage__infoTextBold_inline')]/"
-            "text()").extract_first()
+        owner_name = ''.join(response.xpath("//div[contains("
+                                            "@class, 'productPage__infoTextBold "
+                                            "productPage__infoTextBold_inline')]//text()").extract())
         data_from_site = json.loads(list(filter(lambda i: 'retailrocket.products.post' in i, response.xpath(
             "//script/text()").extract()))[0].split('retailrocket.products.post(')[1].split('\n')[0][:-2])
 

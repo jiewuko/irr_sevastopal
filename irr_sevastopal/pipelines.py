@@ -24,7 +24,6 @@ class SQLiteStorePipeline(object):
         dispatcher.connect(self.initialize, signals.engine_started)
         dispatcher.connect(self.finalize, signals.engine_stopped)
 
-
     def check_item_in_db(self):
         rows = []
         try:
