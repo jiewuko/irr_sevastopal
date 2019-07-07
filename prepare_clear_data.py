@@ -1,29 +1,11 @@
 import sqlite3
+from sqlite3 import OperationalError
 import csv
 import os
 
 
-# conn = sqlite3.connect('irr.sqlite')
-#
-# cur = conn.cursor()
-# cur.execute("""UPDATE irr_data SET agency = owner_name where telephone in (
-#     select telephone from irr_data
-#     group by telephone having count(*) > %s)""" % count_phone_numbers)
-#
-# cur.execute("""UPDATE irr_data SET owner_name = null where telephone in (
-#     select telephone from irr_data
-#     group by telephone having count(*) > %s)""" % count_phone_numbers)
-#
-# cur.execute("""UPDATE irr_data SET agency = null where telephone in (
-#     select telephone from irr_data
-#     group by telephone having count(*) < %s)""" % (count_phone_numbers + 1))
-#
-# conn.commit()
-
-
 class ClearData(object):
     irr_data = 'irr.sqlite'
-    agency_date = 'agency_data.sqlite'
 
     def __init__(self):
         self.hours = self.get_hours_from_file
@@ -35,7 +17,9 @@ class ClearData(object):
         self.rename_owners_if_agency()
         self.remove_agency_if_owner()
         self.create_agency_data()
-
+        self.replace_agency_in_irr_data()
+        self.create_name_table()
+        self.replace_owner_names_in_irr_data()
         self.finalize()
 
     def create_connection(self, filename):
@@ -66,11 +50,42 @@ class ClearData(object):
             group by telephone having count(*) < %s)""" % (self.get_count_phone_number_from_file + 1))
 
     def create_agency_data(self):
-        if os.path.exists(self.agency_date):
-            pass
-        else:
+        try:
             self.conn.execute("""CREATE TABLE agency_data
                      (id INTEGER PRIMARY KEY AUTOINCREMENT, telephone TEXT, agency TEXT)""")
+        except OperationalError:
+            pass
+        agencies_from_irr_data = self.conn.execute("""select telephone, agency from irr_data WHERE agency NOT NULL""")
+        agencies_from_agency_data = self.conn.execute("""select telephone, agency from agency_data""")
+        phones = [phone[0] for phone in set(agencies_from_agency_data)]
+        for data in set(agencies_from_irr_data):
+            if data[0] not in phones:
+                self.conn.execute("""insert into agency_data(telephone,agency) VALUES (?,?)""", (data[0], data[1]))
+
+    def replace_agency_in_irr_data(self):
+        self.conn.execute("""UPDATE irr_data SET telephone = (SELECT id FROM agency_data 
+                                                                WHERE agency_data.telephone = irr_data.telephone),
+                                                 agency = (SELECT id FROM agency_data 
+                                                                WHERE agency_data.agency = irr_data.agency)
+                                                                """)
+
+    def create_name_table(self):
+        try:
+            self.conn.execute("""CREATE TABLE unique_names
+                     (id INTEGER PRIMARY KEY AUTOINCREMENT, owner_name TEXT)""")
+        except OperationalError:
+            pass
+        owner_names_from_irr_data = self.conn.execute("""select owner_name from irr_data where owner_name not null """)
+        owner_names_from_table_names = self.conn.execute("""select owner_name from unique_names""")
+        names = [name for name in owner_names_from_table_names]
+        for owner_name in (set(owner_names_from_irr_data)):
+            if owner_name not in names:
+                self.conn.execute("""insert into unique_names(owner_name) VALUES (?)""", (owner_name))
+
+    def replace_owner_names_in_irr_data(self):
+        self.conn.execute("""UPDATE irr_data SET owner_name = (SELECT id FROM unique_names 
+                                                                WHERE unique_names.owner_name = irr_data.owner_name)
+                                                         """)
 
     def finalize(self):
         if self.conn is not None:
