@@ -63,11 +63,13 @@ class ClearData(object):
                 self.conn.execute("""insert into agency_data(telephone,agency) VALUES (?,?)""", (data[0], data[1]))
 
     def replace_agency_in_irr_data(self):
-        self.conn.execute("""UPDATE irr_data SET telephone = (SELECT id FROM agency_data 
-                                                                WHERE agency_data.telephone = irr_data.telephone),
-                                                 agency = (SELECT id FROM agency_data 
-                                                                WHERE agency_data.agency = irr_data.agency)
-                                                                """)
+        self.conn.execute("""UPDATE irr_data SET agency = (SELECT id FROM agency_data 
+                                                                WHERE agency_data.agency = irr_data.agency),
+                                                telephone = (SELECT id FROM agency_data 
+                                                                WHERE agency_data.telephone = irr_data.telephone) where 
+                                                                telephone in (select telephone from irr_data
+                                                                        group by telephone having count(*) > %s)                
+                                                                """ % self.get_count_phone_number_from_file)
 
     def create_name_table(self):
         try:
